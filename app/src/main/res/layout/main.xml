@@ -16,6 +16,12 @@
         android:layout_height="wrap_content"
         android:text="@string/recognize_microphone"/>
 
+    <Button
+        android:id="@+id/switch_language"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/current_language"/>
+
     <ToggleButton
         android:id="@+id/pause"
         android:layout_width="match_parent"

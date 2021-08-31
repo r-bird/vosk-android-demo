@@ -17,6 +17,8 @@ package org.vosk.demo;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.Button;
@@ -34,6 +36,7 @@ import org.vosk.android.StorageService;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -67,6 +70,7 @@ public class VoskActivity extends Activity implements
 
         findViewById(R.id.recognize_file).setOnClickListener(view -> recognizeFile());
         findViewById(R.id.recognize_mic).setOnClickListener(view -> recognizeMicrophone());
+        findViewById(R.id.switch_language).setOnClickListener(view -> switchLanguage());
         ((ToggleButton) findViewById(R.id.pause)).setOnCheckedChangeListener((view, isChecked) -> pause(isChecked));
 
         LibVosk.setLogLevel(LogLevel.INFO);
@@ -81,7 +85,8 @@ public class VoskActivity extends Activity implements
     }
 
     private void initModel() {
-        StorageService.unpack(this, "model-en-us", "model",
+        String modelDir = getText(R.string.vosk_model_dir).toString();
+        StorageService.unpack(this, modelDir, "model",
                 (model) -> {
                     this.model = model;
                     setUiState(STATE_READY);
@@ -238,6 +243,33 @@ public class VoskActivity extends Activity implements
         }
     }
 
+    private void switchLanguage()
+    {
+        setUiState(STATE_START);
+
+        Resources resources = getResources();
+        Configuration configuration = resources.getConfiguration();
+
+        // get new locale
+        String currentLocaleTag = configuration.locale.toLanguageTag();
+        Locale newLocale;
+        if (currentLocaleTag.equals("en-US"))
+            newLocale = Locale.forLanguageTag("de-DE");
+        else
+            newLocale = Locale.forLanguageTag("en-US");
+
+        // set new locale
+        configuration.setLocale(newLocale);
+        resources.updateConfiguration(configuration, resources.getDisplayMetrics());
+        createConfigurationContext(configuration);
+
+        // update button text
+        Button languageButton = findViewById(R.id.switch_language);
+        languageButton.setText(R.string.current_language);
+
+        // switch language model
+        initModel();
+    }
 
     private void pause(boolean checked) {
         if (speechService != null) {
